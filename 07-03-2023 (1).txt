@@ -1,0 +1,42 @@
+Exporting data present in HDFS into db in local machine
+Step 1:create table in local machine
+	create database test_export;
+	use test_export;
+	create table test_export.orders like retail_db.orders;
+
+Step:2 Transfer(export) data from HDFS to table in local db
+	sqoop export --connect jdbc:mysql://localhost/test_export?useSSL=false --username cdc22 --password msis --table orders --export-dir /location of data in HDFS
+
+HIVE--------------
+
+Hive is similar to sql
+
+To start HIVE:hive
+
+To create database in hive:create database <database name>;
+
+To create table in hive:create table retail_db.categories(category_id int,category_department_id int,category_name varchar(45)) row format delimited fields terminated by ',' stored as textfile;
+
+To load data:  
+load data inpath '/path of data present in HDFS' overwrite into table retail_db.categories;\
+
+
+
+
+
+select * from customer where customer_id=(
+select customer_id from orders
+group by customer_id
+having count(*)>=all(select count(customer_id)
+                     from orders
+                     group by customer_id))
+
+
+SELECT *
+FROM Orders, customer
+WHERE orders.cust_id=customer.customer_id
+and orders.customer_id IN
+            (SELECT TOP (1) o.customer_id
+            FROM Orders AS O
+            GROUP BY O.customer_id
+            ORDER BY COUNT(*) DESC);
